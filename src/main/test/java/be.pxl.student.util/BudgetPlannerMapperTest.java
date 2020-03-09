@@ -17,7 +17,7 @@ class BudgetPlannerMapperTest {
     Path testCsvFile = Paths.get("src/main/resources/account_payments.csv");
     List<String> accountLines;
     BudgetPlannerMapper budgetMapper = new BudgetPlannerMapper();
-    String testDataLine = "Jos,BE69771770897312,BE91129905553774,Sat Feb 08 13:35:53 CET 2020,1642.56,EUR,Dolore non necessitatibus ut porro perspiciatis non voluptas.\n";
+    String testDataLine = "Jos,BE69771770897312,BE91129905553774,Sat Feb 08 13:35:53 CET 2020,1642.56,EUR,Dolore non necessitatibus ut porro perspiciatis non voluptas.";
 
     @BeforeEach
     void setUp() throws BudgetPlannerException {
@@ -44,7 +44,7 @@ class BudgetPlannerMapperTest {
     }
 
     @Test
-    void it_should_map_line_to_account_object(){
+    void it_should_map_line_to_account_object() throws ParseException, BudgetPlannerException {
         Account expectedAccount  = new Account("Jos","BE69771770897312");
         Account lineToAccount =  budgetMapper.mapDataLineToAccount(testDataLine);
         assertEquals(expectedAccount, lineToAccount);
@@ -55,7 +55,7 @@ class BudgetPlannerMapperTest {
         Payment expectedPayment = new Payment("BE91129905553774",
                 budgetMapper.convertToDate("Sat Feb 08 13:35:53 CET 2020"),
                 (float)1642.56,
-                "EUR","Dolore non necessitatibus ut porro perspiciatis non voluptas");
+                "EUR","Dolore non necessitatibus ut porro perspiciatis non voluptas.");
 
        Payment actualPayment = budgetMapper.mapItemsToPayment(testDataLine.split(","));
        assertEquals(expectedPayment,actualPayment);

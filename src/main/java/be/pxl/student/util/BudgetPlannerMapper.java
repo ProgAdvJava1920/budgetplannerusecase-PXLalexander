@@ -10,23 +10,39 @@ import java.util.*;
 public class BudgetPlannerMapper {
 
 
-    public  List<Account> mapAccounts(List<String> accountLines){
-        List<Account> accountList = new ArrayList<>();
-        for (String accountLine : accountLines) {
-            Account account = mapDataLineToAccount(accountLine);
-            if(!accountList.contains(account)){
-                accountList.add(account);
-            }
-        }
-        return accountList;
+    public static final int CSV_ITEM_COUNT = 7;
+    private Map<String,Account>  accountMap = new HashMap<>();
 
+    public  List<Account> mapAccounts(List<String> accountLines){
+        for (String accountLine : accountLines) {
+            Account account = null;
+            try {
+                account = mapDataLineToAccount(accountLine);
+                accountMap.putIfAbsent(account.getIBAN(),account);
+            } catch(ParseException e){
+                System.err.println("Could not parse line " + accountLine);
+            } catch (BudgetPlannerException e) {
+                System.err.println("got an error at " + accountLine);
+            }
+
+        }
+       // return accountList;
+        return new ArrayList<>(accountMap.values());
     }
 
-    public Account mapDataLineToAccount(String line) {
+    public Account mapDataLineToAccount(String line) throws ParseException, BudgetPlannerException {
         String[] items = line.split(",");
+        if (items.length!= CSV_ITEM_COUNT){
+            throw new BudgetPlannerException(String.format("invalid line, expected %d items, Found %s", CSV_ITEM_COUNT, items.length));
+        }
         String name = items[0];
         String iban = items[1];
-        return new Account(name,iban);
+
+        Account account = accountMap.getOrDefault(iban, new Account(name,iban));
+        Payment payment = mapItemsToPayment(items);
+        account.getPayments().add(payment);
+
+        return account;
     }
 
     public Date convertToDate(String testDate) throws ParseException {
